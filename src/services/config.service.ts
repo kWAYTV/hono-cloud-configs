@@ -1,15 +1,15 @@
-import { v4 as uuidv4 } from "uuid";
-import { prisma } from "../lib/prisma.js";
+import { v4 as uuidv4 } from 'uuid';
+import { prisma } from '../lib/prisma.js';
 import type {
   CreateConfigRequest,
   UpdateConfigRequest,
-} from "../types/config.types.js";
+} from '../types/config.types.js';
 
 export const configService = {
   async getMultiple(user: string) {
     return await prisma.config.findMany({
       where: { user },
-      orderBy: { updatedAt: "desc" },
+      orderBy: { updatedAt: 'desc' },
     });
   },
 
@@ -39,6 +39,6 @@ export const configService = {
     await prisma.config.delete({
       where: { id },
     });
-    return { message: "Config successfully deleted" };
+    return { message: 'Config successfully deleted' };
   },
 };
