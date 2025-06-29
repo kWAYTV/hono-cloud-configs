@@ -24,6 +24,5 @@ serve(
   },
   (info) => {
     console.log(`🚀 Server running at http://localhost:${info.port}`);
-    console.log(`📚 API Documentation: http://localhost:${info.port}/`);
   }
 );
