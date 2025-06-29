@@ -7,6 +7,10 @@
     "dev": "bun --watch src/index.ts",
     "build": "bun run tsc",
     "start": "bun dist/index.js",
+    "lint": "biome lint --write",
+    "lint:check": "biome lint",
+    "format": "biome format --write",
+    "format:check": "biome format",
     "db:push": "bunx prisma db push",
     "db:gen": "bunx prisma generate",
     "db:stu": "bunx prisma studio"
@@ -18,6 +22,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.0.6",
     "@types/node": "^20.11.17",
     "@types/uuid": "^10.0.0",
     "prisma": "^6.10.1",
