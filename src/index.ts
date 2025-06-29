@@ -6,16 +6,33 @@ const app = new Hono();
 
 app.get("/", (c) => {
   return c.json({
-    message: "🚀 Cloud Configuration System API",
-    version: "1.0.0",
-    endpoints: {
-      configs: "/api/configs",
-    },
+    success: true,
+    message: "Cloud Configuration API",
   });
 });
 
 // Mount configs routes
 app.route("/api/configs", configs);
+
+app.notFound((c) => {
+  return c.json(
+    {
+      success: false,
+      message: "Not Found",
+    },
+    404
+  );
+});
+
+app.onError((err, c) => {
+  return c.json(
+    {
+      success: false,
+      message: "Internal Server Error",
+    },
+    500
+  );
+});
 
 serve(
   {
