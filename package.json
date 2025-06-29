@@ -1,0 +1,27 @@
+{
+  "name": "hono-cloud-configs",
+  "version": "1.0.0",
+  "description": "Cloud configuration system built with Hono and Prisma",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun run tsc",
+    "start": "bun dist/index.js",
+    "db:push": "bunx prisma db push",
+    "db:gen": "bunx prisma generate",
+    "db:stu": "bunx prisma studio"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.4",
+    "@prisma/client": "^6.10.1",
+    "hono": "^4.8.3",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "@types/uuid": "^10.0.0",
+    "prisma": "^6.10.1",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}
