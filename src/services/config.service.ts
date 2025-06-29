@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from 'uuid';
+import { nanoid } from 'nanoid';
 import { prisma } from '../lib/prisma.js';
 import type {
   CreateConfigRequest,
@@ -22,7 +22,7 @@ export const configService = {
   async create(data: CreateConfigRequest) {
     return await prisma.config.create({
       data: {
-        id: uuidv4(),
+        id: nanoid(),
         ...data,
       },
     });

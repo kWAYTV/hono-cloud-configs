@@ -35,3 +35,6 @@ dist/
 
 # bun
 bun.lock
+
+# database
+prisma/*.db

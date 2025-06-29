@@ -84,13 +84,11 @@ describe('Config Service', () => {
   });
 
   describe('create', () => {
-    it('Should create new config with auto-generated UUID', async () => {
+    it('Should create new config with auto-generated nanoid', async () => {
       const config = await configService.create(testConfig);
 
       expect(config.id).toBeDefined();
-      expect(config.id).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-      );
+      expect(config.id).toMatch(/^[A-Za-z0-9_-]{21}$/);
       expect(config.name).toBe(testConfig.name);
       expect(config.user).toBe(testConfig.user);
       expect(config.content).toBe(testConfig.content);

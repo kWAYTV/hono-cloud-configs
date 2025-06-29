@@ -114,5 +114,6 @@ src/
 - [SQLite](https://sqlite.org/) - Database
 - [TypeScript](https://typescriptlang.org/) - Type safety
 - [Bun](https://bun.sh/) - JavaScript runtime & package manager
+- [nanoid](https://github.com/ai/nanoid) - Secure URL-friendly unique ID generator
 
 open http://localhost:3000
