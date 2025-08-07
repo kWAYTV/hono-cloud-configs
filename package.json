@@ -12,8 +12,8 @@
     "format": "biome format --write",
     "format:check": "biome format",
     "db:push": "bunx prisma db push",
-    "db:gen": "bunx prisma generate",
-    "db:stu": "bunx prisma studio",
+    "db:generate": "bunx prisma generate",
+    "db:studio": "bunx prisma studio",
     "test": "bun test",
     "test:dry": "bun test --dry"
   },
