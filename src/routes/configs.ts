@@ -2,6 +2,7 @@ import { Hono } from 'hono';
 import { configService } from '../services/config.service.js';
 import type {
   CreateConfigRequest,
+  ImportSingleConfigRequest,
   UpdateConfigRequest,
 } from '../types/config.types.js';
 
@@ -18,6 +19,17 @@ const app = new Hono()
       return c.json({ data: configs });
     } catch (_error) {
       return c.json({ error: 'Failed to fetch configs' }, 500);
+    }
+  })
+
+  .get('/:id/export', async (c) => {
+    const id = c.req.param('id');
+    try {
+      const item = await configService.exportSingle(id);
+      if (!item) return c.json({ error: 'Config not found' }, 404);
+      return c.json(item);
+    } catch (_error) {
+      return c.json({ error: 'Failed to export config' }, 500);
     }
   })
 
@@ -80,6 +92,32 @@ const app = new Hono()
       return c.json(result);
     } catch (_error) {
       return c.json({ error: 'Failed to delete config' }, 500);
+    }
+  })
+
+  .post('/:id/import', async (c) => {
+    const id = c.req.param('id');
+    try {
+      const body = await c.req.json<ImportSingleConfigRequest>();
+      if (!body?.user || !body?.content) {
+        return c.json({ error: 'Missing required fields: user, content' }, 400);
+      }
+
+      try {
+        const result = await configService.importSingle(id, body);
+        const status = result.action === 'created' ? 201 : 200;
+        return c.json(result, status);
+      } catch (e) {
+        if (
+          e instanceof Error &&
+          e.message.includes('Missing required field: name')
+        ) {
+          return c.json({ error: 'Missing required fields: name' }, 400);
+        }
+        throw e;
+      }
+    } catch (_error) {
+      return c.json({ error: 'Failed to import config' }, 500);
     }
   });
 

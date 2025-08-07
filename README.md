@@ -92,6 +92,40 @@ PUT /api/configs/:id
 DELETE /api/configs/:id
 ```
 
+### Export a single config
+
+```http
+GET /api/configs/:id/export
+```
+
+Response:
+
+```json
+{
+  "id": "cfg-id",
+  "user": "username",
+  "name": "config-a",
+  "content": "..."
+}
+```
+
+### Import a single config
+
+```http
+POST /api/configs/:id/import
+```
+
+Request body:
+
+```json
+{
+  "user": "username",
+  "content": "...",
+  "name": "config-a", // required only if creating a new config with this id
+  "mode": "upsert"
+}
+```
+
 ## 🏗️ Project Structure
 
 ```

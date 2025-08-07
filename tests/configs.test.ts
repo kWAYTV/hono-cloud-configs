@@ -211,4 +211,115 @@ describe('Configs Routes', () => {
       expect(deletedConfig).toBeNull();
     });
   });
+
+  describe('GET /api/configs/:id/export', () => {
+    it('Should return 404 for non-existent config', async () => {
+      const req = new Request(
+        'http://localhost:3000/api/configs/no-such-id/export',
+      );
+      const res = await app.fetch(req);
+      expect(res.status).toBe(404);
+    });
+
+    it('Should export a single config by id', async () => {
+      const created = await prisma.config.create({
+        data: { id: 'exp-one-1', user: testUser, name: 'n1', content: 'C1' },
+      });
+      const req = new Request(
+        `http://localhost:3000/api/configs/${created.id}/export`,
+      );
+      const res = await app.fetch(req);
+      const data = await res.json();
+
+      expect(res.status).toBe(200);
+      expect(data.id).toBe(created.id);
+      expect(data.user).toBe(testUser);
+      expect(data.name).toBe('n1');
+      expect(data.content).toBe('C1');
+    });
+  });
+
+  describe('POST /api/configs/:id/import', () => {
+    it('Should return 400 if user/content are missing', async () => {
+      const req = new Request(
+        'http://localhost:3000/api/configs/imp-one-1/import',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: testUser }),
+        },
+      );
+      const res = await app.fetch(req);
+      const data = await res.json();
+      expect(res.status).toBe(400);
+      expect(data.error).toBe('Missing required fields: user, content');
+    });
+
+    it('Should create when not exists (requires name)', async () => {
+      const req = new Request(
+        'http://localhost:3000/api/configs/imp-one-2/import',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: testUser, name: 'n2', content: 'C2' }),
+        },
+      );
+      const res = await app.fetch(req);
+      const data = await res.json();
+      expect(res.status).toBe(201);
+      expect(data.action).toBe('created');
+      const created = await prisma.config.findUnique({
+        where: { id: 'imp-one-2' },
+      });
+      expect(created?.content).toBe('C2');
+    });
+
+    it('Should update when exists (default upsert)', async () => {
+      await prisma.config.create({
+        data: { id: 'imp-one-3', user: testUser, name: 'n3', content: 'old' },
+      });
+      const req = new Request(
+        'http://localhost:3000/api/configs/imp-one-3/import',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ user: testUser, content: 'new' }),
+        },
+      );
+      const res = await app.fetch(req);
+      const data = await res.json();
+      expect(res.status).toBe(200);
+      expect(data.action).toBe('updated');
+      const updated = await prisma.config.findUnique({
+        where: { id: 'imp-one-3' },
+      });
+      expect(updated?.content).toBe('new');
+    });
+
+    it('Should skip when exists and mode is insert-only', async () => {
+      await prisma.config.create({
+        data: { id: 'imp-one-4', user: testUser, name: 'n4', content: 'keep' },
+      });
+      const req = new Request(
+        'http://localhost:3000/api/configs/imp-one-4/import',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            user: testUser,
+            content: 'ignored',
+            mode: 'insert-only',
+          }),
+        },
+      );
+      const res = await app.fetch(req);
+      const data = await res.json();
+      expect(res.status).toBe(200);
+      expect(data.action).toBe('skipped');
+      const unchanged = await prisma.config.findUnique({
+        where: { id: 'imp-one-4' },
+      });
+      expect(unchanged?.content).toBe('keep');
+    });
+  });
 });

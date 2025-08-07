@@ -18,7 +18,6 @@ app.get('/', (c) => {
   });
 });
 
-// Mount configs routes
 app.route('/api/configs', configs);
 
 app.notFound((c) => {
