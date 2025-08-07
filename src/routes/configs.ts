@@ -1,29 +1,35 @@
+import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+import {
+  createConfigSchema,
+  idParamSchema,
+  importSingleSchema,
+  updateConfigSchema,
+  userQuerySchema,
+} from '../schemas/configs.schema.js';
 import { configService } from '../services/config.service.js';
-import type {
-  CreateConfigRequest,
-  ImportSingleConfigRequest,
-  UpdateConfigRequest,
-} from '../types/config.types.js';
 
 const app = new Hono()
-  .get('/', async (c) => {
-    const user = c.req.query('user');
+  .get(
+    '/',
+    zValidator('query', userQuerySchema, (result, c) => {
+      if (!result.success) {
+        return c.json({ error: 'User parameter is required' }, 400);
+      }
+    }),
+    async (c) => {
+      const { user } = c.req.valid('query');
+      try {
+        const configs = await configService.getMultiple(user);
+        return c.json({ data: configs });
+      } catch (_error) {
+        return c.json({ error: 'Failed to fetch configs' }, 500);
+      }
+    },
+  )
 
-    if (!user) {
-      return c.json({ error: 'User parameter is required' }, 400);
-    }
-
-    try {
-      const configs = await configService.getMultiple(user);
-      return c.json({ data: configs });
-    } catch (_error) {
-      return c.json({ error: 'Failed to fetch configs' }, 500);
-    }
-  })
-
-  .get('/:id/export', async (c) => {
-    const id = c.req.param('id');
+  .get('/:id/export', zValidator('param', idParamSchema), async (c) => {
+    const { id } = c.req.valid('param');
     try {
       const item = await configService.exportSingle(id);
       if (!item) return c.json({ error: 'Config not found' }, 404);
@@ -33,9 +39,8 @@ const app = new Hono()
     }
   })
 
-  .get('/:id', async (c) => {
-    const id = c.req.param('id');
-
+  .get('/:id', zValidator('param', idParamSchema), async (c) => {
+    const { id } = c.req.valid('param');
     try {
       const config = await configService.getSingle(id);
 
@@ -49,44 +54,49 @@ const app = new Hono()
     }
   })
 
-  .post('/', async (c) => {
-    try {
-      const body = await c.req.json<CreateConfigRequest>();
-
-      if (!body.user || !body.name || !body.content) {
+  .post(
+    '/',
+    zValidator('json', createConfigSchema, (result, c) => {
+      if (!result.success) {
         return c.json(
           { error: 'Missing required fields: user, name, content' },
           400,
         );
       }
+    }),
+    async (c) => {
+      try {
+        const body = c.req.valid('json');
+        const config = await configService.create(body);
+        return c.json({ data: config }, 201);
+      } catch (_error) {
+        return c.json({ error: 'Failed to create config' }, 500);
+      }
+    },
+  )
 
-      const config = await configService.create(body);
-      return c.json({ data: config }, 201);
-    } catch (_error) {
-      return c.json({ error: 'Failed to create config' }, 500);
-    }
-  })
-
-  .put('/:id', async (c) => {
-    const id = c.req.param('id');
-
-    try {
-      const body = await c.req.json<UpdateConfigRequest>();
-
-      if (!body.content) {
+  .put(
+    '/:id',
+    zValidator('param', idParamSchema),
+    zValidator('json', updateConfigSchema, (result, c) => {
+      if (!result.success) {
         return c.json({ error: 'Content field is required' }, 400);
       }
+    }),
+    async (c) => {
+      const { id } = c.req.valid('param');
+      try {
+        const body = c.req.valid('json');
+        const config = await configService.update(id, body);
+        return c.json({ data: config });
+      } catch (_error) {
+        return c.json({ error: 'Failed to update config' }, 500);
+      }
+    },
+  )
 
-      const config = await configService.update(id, body);
-      return c.json({ data: config });
-    } catch (_error) {
-      return c.json({ error: 'Failed to update config' }, 500);
-    }
-  })
-
-  .delete('/:id', async (c) => {
-    const id = c.req.param('id');
-
+  .delete('/:id', zValidator('param', idParamSchema), async (c) => {
+    const { id } = c.req.valid('param');
     try {
       const result = await configService.delete(id);
       return c.json(result);
@@ -95,30 +105,35 @@ const app = new Hono()
     }
   })
 
-  .post('/:id/import', async (c) => {
-    const id = c.req.param('id');
-    try {
-      const body = await c.req.json<ImportSingleConfigRequest>();
-      if (!body?.user || !body?.content) {
+  .post(
+    '/:id/import',
+    zValidator('param', idParamSchema),
+    zValidator('json', importSingleSchema, (result, c) => {
+      if (!result.success) {
         return c.json({ error: 'Missing required fields: user, content' }, 400);
       }
-
+    }),
+    async (c) => {
+      const { id } = c.req.valid('param');
       try {
-        const result = await configService.importSingle(id, body);
-        const status = result.action === 'created' ? 201 : 200;
-        return c.json(result, status);
-      } catch (e) {
-        if (
-          e instanceof Error &&
-          e.message.includes('Missing required field: name')
-        ) {
-          return c.json({ error: 'Missing required fields: name' }, 400);
+        const body = c.req.valid('json');
+        try {
+          const result = await configService.importSingle(id, body);
+          const status = result.action === 'created' ? 201 : 200;
+          return c.json(result, status);
+        } catch (e) {
+          if (
+            e instanceof Error &&
+            e.message.includes('Missing required field: name')
+          ) {
+            return c.json({ error: 'Missing required fields: name' }, 400);
+          }
+          throw e;
         }
-        throw e;
+      } catch (_error) {
+        return c.json({ error: 'Failed to import config' }, 500);
       }
-    } catch (_error) {
-      return c.json({ error: 'Failed to import config' }, 500);
-    }
-  });
+    },
+  );
 
 export default app;

@@ -2,10 +2,12 @@ import { nanoid } from 'nanoid';
 import { prisma } from '../lib/prisma.js';
 import type {
   CreateConfigRequest,
-  ExportSingleConfigResponseItem,
   ImportSingleConfigRequest,
-  ImportSingleConfigResponse,
   UpdateConfigRequest,
+} from '../schemas/configs.schema.js';
+import type {
+  ExportSingleConfigResponseItem,
+  ImportSingleConfigResponse,
 } from '../types/config.types.js';
 
 export const configService = {
