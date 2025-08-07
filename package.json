@@ -29,7 +29,8 @@
     "bun-types": "^1.2.19",
     "prisma": "^6.13.0",
     "tsx": "^4.20.3",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "@types/bun": "latest"
   },
   "module": "src/index.ts",
   "private": true
