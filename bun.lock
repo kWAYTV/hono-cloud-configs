@@ -9,6 +9,7 @@
         "@prisma/client": "^6.13.0",
         "hono": "^4.8.12",
         "nanoid": "^5.1.5",
+        "stoker": "^2.0.1",
         "zod": "^4.0.15",
       },
       "devDependencies": {
@@ -216,6 +217,8 @@
     "spdx-expression-parse": ["spdx-expression-parse@3.0.1", "", { "dependencies": { "spdx-exceptions": "^2.1.0", "spdx-license-ids": "^3.0.0" } }, "sha512-cbqHunsQWnJNE6KhVSMsMeH5H/L9EpymbzqTQ3uLwNCLZ1Q481oWaofqH7nO6V07xlXwY6PhQdQ2IedWx/ZK4Q=="],
 
     "spdx-license-ids": ["spdx-license-ids@3.0.22", "", {}, "sha512-4PRT4nh1EImPbt2jASOKHX7PB7I+e4IWNLvkKFDxNhJlfjbYlleYQh285Z/3mPTHSAK/AvdMmw5BNNuYH8ShgQ=="],
+
+    "stoker": ["stoker@2.0.1", "", { "peerDependencies": { "@asteasolutions/zod-to-openapi": "^8.0.0", "@hono/zod-openapi": ">=1.0.0", "hono": "^4.0.0", "openapi3-ts": "^4.5.0" }, "optionalPeers": ["@asteasolutions/zod-to-openapi", "@hono/zod-openapi", "openapi3-ts"] }, "sha512-liSQNnJmn8fWSEan7sVaFe6iSHuN3X02fDGLS6snwW+FUuKi5HmKUHm3P+Kzr5xiDPqRpmSTtmGEBbSL9H2zkQ=="],
 
     "tinyexec": ["tinyexec@1.0.1", "", {}, "sha512-5uC6DDlmeqiOwCPmK9jMSdOuZTh8bU39Ys6yidB+UTt5hfZUPGAypSgFRiEp+jbi9qH40BLDvy85jIU88wKSqw=="],
 

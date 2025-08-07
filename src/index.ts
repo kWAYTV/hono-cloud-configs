@@ -5,6 +5,8 @@ import { logger } from 'hono/logger';
 import { poweredBy } from 'hono/powered-by';
 import { prettyJSON } from 'hono/pretty-json';
 import { requestId } from 'hono/request-id';
+import notFound from 'stoker/middlewares/not-found';
+import onError from 'stoker/middlewares/on-error';
 import configs from './routes/configs.js';
 
 const app = new Hono();
@@ -25,25 +27,9 @@ app.get('/', (c) => {
 
 app.route('/api/configs', configs);
 
-app.notFound((c) => {
-  return c.json(
-    {
-      success: false,
-      message: 'Not Found',
-    },
-    404,
-  );
-});
+app.notFound(notFound);
 
-app.onError((_err, c) => {
-  return c.json(
-    {
-      success: false,
-      message: 'Internal Server Error',
-    },
-    500,
-  );
-});
+app.onError(onError);
 
 serve(
   {

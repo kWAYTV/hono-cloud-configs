@@ -1,5 +1,6 @@
 import { zValidator } from '@hono/zod-validator';
 import { Hono } from 'hono';
+import * as HttpStatusCodes from 'stoker/http-status-codes';
 import {
   createConfigSchema,
   idParamSchema,
@@ -14,7 +15,10 @@ const app = new Hono()
     '/',
     zValidator('query', userQuerySchema, (result, c) => {
       if (!result.success) {
-        return c.json({ error: 'User parameter is required' }, 400);
+        return c.json(
+          { error: 'User parameter is required' },
+          HttpStatusCodes.BAD_REQUEST,
+        );
       }
     }),
     async (c) => {
@@ -23,7 +27,10 @@ const app = new Hono()
         const configs = await configService.getMultiple(user);
         return c.json({ data: configs });
       } catch (_error) {
-        return c.json({ error: 'Failed to fetch configs' }, 500);
+        return c.json(
+          { error: 'Failed to fetch configs' },
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        );
       }
     },
   )
@@ -32,10 +39,14 @@ const app = new Hono()
     const { id } = c.req.valid('param');
     try {
       const item = await configService.exportSingle(id);
-      if (!item) return c.json({ error: 'Config not found' }, 404);
+      if (!item)
+        return c.json({ error: 'Config not found' }, HttpStatusCodes.NOT_FOUND);
       return c.json(item);
     } catch (_error) {
-      return c.json({ error: 'Failed to export config' }, 500);
+      return c.json(
+        { error: 'Failed to export config' },
+        HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      );
     }
   })
 
@@ -45,12 +56,15 @@ const app = new Hono()
       const config = await configService.getSingle(id);
 
       if (!config) {
-        return c.json({ error: 'Config not found' }, 404);
+        return c.json({ error: 'Config not found' }, HttpStatusCodes.NOT_FOUND);
       }
 
       return c.json({ data: config });
     } catch (_error) {
-      return c.json({ error: 'Failed to fetch config' }, 500);
+      return c.json(
+        { error: 'Failed to fetch config' },
+        HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      );
     }
   })
 
@@ -60,7 +74,7 @@ const app = new Hono()
       if (!result.success) {
         return c.json(
           { error: 'Missing required fields: user, name, content' },
-          400,
+          HttpStatusCodes.BAD_REQUEST,
         );
       }
     }),
@@ -68,9 +82,12 @@ const app = new Hono()
       try {
         const body = c.req.valid('json');
         const config = await configService.create(body);
-        return c.json({ data: config }, 201);
+        return c.json({ data: config }, HttpStatusCodes.CREATED);
       } catch (_error) {
-        return c.json({ error: 'Failed to create config' }, 500);
+        return c.json(
+          { error: 'Failed to create config' },
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        );
       }
     },
   )
@@ -80,7 +97,10 @@ const app = new Hono()
     zValidator('param', idParamSchema),
     zValidator('json', updateConfigSchema, (result, c) => {
       if (!result.success) {
-        return c.json({ error: 'Content field is required' }, 400);
+        return c.json(
+          { error: 'Content field is required' },
+          HttpStatusCodes.BAD_REQUEST,
+        );
       }
     }),
     async (c) => {
@@ -90,7 +110,10 @@ const app = new Hono()
         const config = await configService.update(id, body);
         return c.json({ data: config });
       } catch (_error) {
-        return c.json({ error: 'Failed to update config' }, 500);
+        return c.json(
+          { error: 'Failed to update config' },
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        );
       }
     },
   )
@@ -101,7 +124,10 @@ const app = new Hono()
       const result = await configService.delete(id);
       return c.json(result);
     } catch (_error) {
-      return c.json({ error: 'Failed to delete config' }, 500);
+      return c.json(
+        { error: 'Failed to delete config' },
+        HttpStatusCodes.INTERNAL_SERVER_ERROR,
+      );
     }
   })
 
@@ -110,7 +136,10 @@ const app = new Hono()
     zValidator('param', idParamSchema),
     zValidator('json', importSingleSchema, (result, c) => {
       if (!result.success) {
-        return c.json({ error: 'Missing required fields: user, content' }, 400);
+        return c.json(
+          { error: 'Missing required fields: user, content' },
+          HttpStatusCodes.BAD_REQUEST,
+        );
       }
     }),
     async (c) => {
@@ -119,19 +148,28 @@ const app = new Hono()
         const body = c.req.valid('json');
         try {
           const result = await configService.importSingle(id, body);
-          const status = result.action === 'created' ? 201 : 200;
+          const status =
+            result.action === 'created'
+              ? HttpStatusCodes.CREATED
+              : HttpStatusCodes.OK;
           return c.json(result, status);
         } catch (e) {
           if (
             e instanceof Error &&
             e.message.includes('Missing required field: name')
           ) {
-            return c.json({ error: 'Missing required fields: name' }, 400);
+            return c.json(
+              { error: 'Missing required fields: name' },
+              HttpStatusCodes.BAD_REQUEST,
+            );
           }
           throw e;
         }
       } catch (_error) {
-        return c.json({ error: 'Failed to import config' }, 500);
+        return c.json(
+          { error: 'Failed to import config' },
+          HttpStatusCodes.INTERNAL_SERVER_ERROR,
+        );
       }
     },
   );
